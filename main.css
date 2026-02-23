@@ -8,25 +8,31 @@ body {
   background-color: #e1bee7;
 }
 .header {
-  padding: 2rem;
+  padding: 2rem 0;
+  text-align: center;
 }
 
-.header-content {
-  display: flex;
-  align-items: center; /* centra verticalmente */
-  justify-content: center; /* centra el conjunto */
-  gap: 1.5rem; /* espacio entre logo y texto */
+.logo-container {
+  position: relative;
+  display: inline-block;
 }
 
-.header-logo {
-  width: 130px; /* un poco más grande */
-  height: auto;
+/* Logo marca de agua */
+.logo-bg {
+  width: 320px; /* más grande */
+  opacity: 0.18; /* efecto marca de agua suave */
+  display: block;
 }
 
+/* Texto encima */
 .title {
+  position: absolute;
+  top: 55%; /* ligeramente más abajo del centro */
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-family: "Momo Signature";
-  font-size: 4rem; /* grande */
-  color: #24148c; /* tu color original */
+  font-size: 4rem;
+  color: #24148c;
   margin: 0;
 }
 
