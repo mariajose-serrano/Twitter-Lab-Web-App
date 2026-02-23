@@ -1,163 +1,173 @@
 "use strict";
 
-//con esto siempre que recargue la pagina me da 10 nuevos usuarios
-//localStorage.removeItem("usersBackup");
+/*
+  TWITTERLAB - main.js
+  Objetivo:
+  1) Pintar 10 usuarios (desde API o desde localStorage si ya hay guardados).
+  2) Al hacer click en una tarjeta, marcar/desmarcar como "amigo" (clase CSS "friend").
+  3) Botón "Guardar datos": guardar el array actual en localStorage.
+  4) Botón "Recuperar datos": leer del localStorage, sustituir el array y repintar.
+*/
 
+// ===============================
 // SECCIÓN DE QUERY-SELECTOR
-// Éstos son los elementos que nos traemos de la página HTML y usamos en el código
-
+// Traemos elementos del HTML
+// ===============================
 const usersList = document.querySelector(".js_usersList");
-
 const btnSave = document.querySelector(".btn-save");
 const btnLoad = document.querySelector(".btn-load");
 
-console.log(btnSave);
-console.log(btnLoad);
+// ===============================
+// SECCIÓN DE DATOS (estado global)
+// Aquí guardamos los usuarios en memoria
+// ===============================
+let usersArray = [];
 
-// SECCIÓN DE ACCIONES AL CARGAR LA PÁGINA
-// Este código se ejecutará cuando se carga la página
-// Lo más común es:
-//   - Pedir datos al servidor
-//   - Pintar (render) elementos en la página
+// Clave que usaremos en localStorage (un "nombre" para guardar/leer)
+const LS_KEY = "usersBackup";
 
-//const oneuser = {
-//name: "Yolande Dupuis",
-//city: "Mettembert",
-//username: "greencat145",
-//};
-//DEJO ESTO COMENTADO.
+// ===============================
+// SECCIÓN DE FUNCIONES DE RENDER
+// (Pintar 1 usuario y pintar la lista completa)
+// ===============================
 
-//NECESITAMOS UN BUCLE QUE RECORRA CADA UNO DE LOS OBJETOS DEL ARRAY
-
+/*
+  Devuelve el HTML de UNA tarjeta de usuario.
+  - Si oneUser.isFriend es true, añade la clase "friend" para pintarlo distinto.
+  - Guarda el id del usuario en data-id para poder identificarlo al hacer click.
+*/
 function renderOneUser(oneUser) {
   const friendClass = oneUser.isFriend ? "friend" : "";
 
-  const html = `
-<li class="userCard ${friendClass}" data-id="${oneUser.login.uuid}">
-        <img src="${oneUser.picture.medium}" alt="Userphoto" />
-        <h3>${oneUser.name.first} ${oneUser.name.last}</h3>
-        <ul class="usersfeatures">
-          <li>${oneUser.location.city}</li>
-          <li>${oneUser.login.username}</li>
-        </ul>
-      </li>`;
-
-  return html;
+  return `
+    <li class="userCard ${friendClass}" data-id="${oneUser.login.uuid}">
+      <img src="${oneUser.picture.medium}" alt="Userphoto" />
+      
+      <p><strong>Nombre:</strong> ${oneUser.name.first} ${oneUser.name.last}</p>
+      <p><strong>Usuario:</strong> ${oneUser.login.username}</p>
+      
+      <p><strong>Ciudad:</strong> ${oneUser.location.city}</p>
+    </li>
+  `;
 }
 
-//solo hay 1
-let usersArray = [];
-
-//Bucle for para pintar 1 usuario
-
-let html = "";
-
-for (const oneUser of usersArray) {
-  html += renderOneUser(oneUser);
-}
-
-usersList.innerHTML = html;
-
-// PINTAMOS EL HTML RESULTADO EN EL <ul>
-
-// SECCIÓN DE DATOS;
-// Variables globales que almacenan la información principal de la aplicación
-// y se usan por todo el fichero.
-
-// SECCIÓN DE FUNCIONES
-// Éstas son funciones:
-//   - con código auxiliar
-//   - con código que usaremos en los eventos
-//   - para pintar (render) en la página.
-
-//Función para pintar todos los usuarios
-//si un array tiene algun elemento se usa propiedad lenght
-
-function renderAllUsers(usersArray) {
-  if (usersArray.lenght === 0) {
+/*
+  Pinta TODOS los usuarios en el <ul class="js_usersList">.
+  - Si no hay usuarios, muestra un mensaje.
+*/
+function renderAllUsers(list) {
+  if (list.length === 0) {
     usersList.innerHTML = "<li>No hay tarjetas!</li>";
-  } else {
-    //El array Users si tiene objetos
+    return;
   }
 
   let html = "";
-
-  for (const oneUser of usersArray) {
+  for (const oneUser of list) {
     html += renderOneUser(oneUser);
   }
-
   usersList.innerHTML = html;
 }
 
-//. Llamada a la función
-renderAllUsers(usersArray);
-
+// ===============================
 // SECCIÓN DE FUNCIONES DE EVENTOS
-// Aquí van las funciones handler/manejadoras de eventos
+// (click en tarjetas, guardar, recuperar)
+// ===============================
 
-// SECCIÓN DE EVENTOS
-// Éstos son los eventos a los que reacciona la página
-// Los más comunes son: click (en botones, enlaces), input (en ídem) y submit (en form)
-
-btnLoad.addEventListener("click", loadUsersFromLocalStorage);
-
-//para MARCAR EN ROSA COMO AMIGO !!!!!
-
-usersList.addEventListener("click", marcarAmigo);
-
-function marcarAmigo(event) {
+/*
+  Al hacer click dentro del <ul>:
+  - Detectamos la tarjeta (.userCard) más cercana.
+  - Buscamos el usuario en usersArray por su uuid.
+  - Alternamos isFriend (true/false).
+  - Repintamos para que se vea el cambio.
+*/
+function toggleFriend(event) {
   const li = event.target.closest(".userCard");
   if (!li) return;
 
   const clickedId = li.dataset.id;
 
   const clickedUser = usersArray.find((user) => user.login.uuid === clickedId);
+  if (!clickedUser) return;
 
-  if (clickedUser) {
-    clickedUser.isFriend = true; // marcado
-    console.log("Marcado como amigo:", clickedUser);
+  // Alterna: si estaba true pasa a false; si estaba false pasa a true
+  clickedUser.isFriend = !clickedUser.isFriend;
 
-    renderAllUsers(usersArray); // ← REPINTAR EL LISTADO
-  }
+  // Repintamos para que se aplique o quite la clase "friend"
+  renderAllUsers(usersArray);
 }
 
-// Sacamos la info del Local Storage
-//si NO si no esta esta variable creada en el LS hacemos Fetch y guardamos datos en el LS.
-
-// NO HAY DATOS → LOS CARGO DE LA API
-
-fetch("https://randomuser.me/api/?results=10")
-  .then((res) => res.json())
-  .then((data) => {
-    usersArray = data.results; // guardo en array global
-    renderAllUsers(usersArray); // pinto
-  });
-
-//BOTON PARA GUARDAR USUARIOS !!!
-
-const saveBtn = document.querySelector(".btn-save");
-
-btnSave.addEventListener("click", saveUsersToLocalStorage);
-
+/*
+  Guarda el array actual en localStorage:
+  - JSON.stringify convierte el array de objetos en texto.
+*/
 function saveUsersToLocalStorage() {
-  localStorage.setItem("usersBackup", JSON.stringify(usersArray));
+  localStorage.setItem(LS_KEY, JSON.stringify(usersArray));
   console.log("Usuarios guardados:", usersArray);
 }
 
+/*
+  Recupera el array desde localStorage:
+  - Si no hay nada guardado, devolvemos [].
+  - Si hay datos, sustituimos usersArray y repintamos.
+*/
 function loadUsersFromLocalStorage() {
-  // Leer del localStorage (si no existe, devuelve [])
-  const dataInLS = JSON.parse(localStorage.getItem("usersBackup") || "[]");
+  const dataInLS = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+  console.log("CLICK recuperar");
+  console.log("LS RAW:", localStorage.getItem("usersBackup"));
 
   if (dataInLS.length === 0) {
     console.log("No hay datos guardados en localStorage");
     return;
   }
 
-  // Sobrescribir el array global
   usersArray = dataInLS;
-
-  // Volver a pintar
   renderAllUsers(usersArray);
 
   console.log("Usuarios recuperados:", usersArray);
 }
+
+// ===============================
+// SECCIÓN DE API (traer usuarios)
+// ===============================
+
+/*
+  Pide 10 usuarios a randomuser.me
+  - Guarda data.results en usersArray
+  - Repinta
+*/
+function fetchUsersFromApi() {
+  fetch("https://randomuser.me/api/?results=10")
+    .then((res) => res.json())
+    .then((data) => {
+      usersArray = data.results;
+      renderAllUsers(usersArray);
+      console.log("Usuarios cargados desde API:", usersArray);
+    });
+}
+
+// ===============================
+// SECCIÓN DE EVENTOS
+// Enganchamos los listeners
+// ===============================
+btnSave.addEventListener("click", saveUsersToLocalStorage);
+btnLoad.addEventListener("click", loadUsersFromLocalStorage);
+usersList.addEventListener("click", toggleFriend);
+
+// ===============================
+// SECCIÓN DE INICIO (al cargar la página)
+// 1) Si hay datos guardados -> pintar esos
+// 2) Si no hay -> pedir a la API
+// ===============================
+function init() {
+  const dataInLS = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+
+  if (dataInLS.length > 0) {
+    usersArray = dataInLS;
+    renderAllUsers(usersArray);
+    console.log("Cargados desde localStorage al iniciar");
+  } else {
+    fetchUsersFromApi();
+  }
+}
+
+init();

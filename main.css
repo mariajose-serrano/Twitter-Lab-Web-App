@@ -20,14 +20,13 @@ body {
 }
 
 /* Lista vertical */
-.usersList {
+.js_usersList {
   display: flex;
-  flex-direction: column; /* UNO DEBAJO DEL OTRO */
-  gap: 2rem;
-  padding: 2rem;
+  flex-direction: column; /* una debajo de otra */
+  gap: 1.5rem;
+  padding: 2rem 5%; /* margen lateral pequeño */
   list-style: none;
-  max-width: 500px;
-  margin: auto;
+  margin: 0;
 }
 
 /* Tarjeta */
@@ -88,9 +87,4 @@ main h2 {
 
 .friend {
   background-color: pink;
-}
-.userCard {
-  padding: 10px;
-  margin-bottom: 8px;
-  border: 1px solid #ccc;
 }
