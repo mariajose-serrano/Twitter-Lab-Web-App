@@ -7,16 +7,27 @@ body {
   font-family: "Noto Serif", serif;
   background-color: #e1bee7;
 }
-
 .header {
-  text-align: center;
   padding: 2rem;
+}
+
+.header-content {
+  display: flex;
+  align-items: center; /* centra verticalmente */
+  justify-content: center; /* centra el conjunto */
+  gap: 1.5rem; /* espacio entre logo y texto */
+}
+
+.header-logo {
+  width: 130px; /* un poco más grande */
+  height: auto;
 }
 
 .title {
   font-family: "Momo Signature";
-  font-size: 3rem;
-  color: #24148c;
+  font-size: 4rem; /* grande */
+  color: #24148c; /* tu color original */
+  margin: 0;
 }
 
 /* Lista vertical */
